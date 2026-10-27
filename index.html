@@ -845,6 +845,55 @@ body[data-mode="view"] .card{ cursor:pointer; }
 .share-linkrow{ display:flex; gap:8px; margin-top:8px; }
 .share-linkrow input{ flex:1; min-width:0; font:inherit; font-size:11.5px; padding:8px 10px; border-radius:10px; border:1px solid var(--card-border); background:rgba(148,163,184,.08); color:var(--text); }
 [hidden]{ display:none !important; }
+
+/* ---------- photos: always a fixed square, never able to grow the card ---------- */
+.card .photo{ position:relative; contain:layout paint; }
+.card .photo img{ position:absolute; inset:0; width:100%; height:100%; max-width:none; object-fit:cover; }
+.photo-preview{ position:relative; contain:layout paint; }
+.photo-preview img{ position:absolute; inset:0; width:100%; height:100%; max-width:none; object-fit:cover; }
+
+/* ---------- crop dialog ---------- */
+.crop-stage{ display:grid; place-items:center; margin:4px 0 14px; }
+#crop-canvas{ width:min(76vw,300px); height:min(76vw,300px); border-radius:18px; cursor:grab; touch-action:none; background:#0f172a; box-shadow:0 14px 34px -16px rgba(15,23,42,.6); }
+#crop-canvas.drag{ cursor:grabbing; }
+.crop-zoom{ display:flex; align-items:center; gap:12px; font-size:15px; color:var(--muted); font-weight:700; }
+.crop-zoom input{ flex:1; accent-color:var(--accent); height:28px; }
+.crop-note{ margin:10px 0 0; text-align:center; font-size:11.5px; color:var(--muted); font-weight:500; }
+
+/* ---------- compact (Facebook-style) cards: small round photo, click to enlarge ---------- */
+.card .photo.zoomable{ cursor:zoom-in; }
+.card .photo.zoomable img{ transition:transform .25s ease; }
+.card .photo.zoomable:hover img{ transform:scale(1.07); }
+body[data-cards="compact"] .card{ width:176px; }
+body[data-cards="compact"] .joint-card .card{ width:auto; min-width:160px; }
+body[data-cards="compact"] .card .photo{ width:96px; height:96px; aspect-ratio:auto; flex:0 0 auto; border-radius:50%; margin:18px auto 12px; border:3px solid var(--accent-c); box-sizing:border-box; }
+body[data-cards="compact"] .card .photo .ph{ font-size:30px; }
+body[data-cards="compact"] .card .body{ border-top:none; align-items:center; text-align:center; padding:0 12px 16px; }
+body[data-cards="compact"] .card .name, body[data-cards="compact"] .card .extra{ max-width:100%; }
+body[data-cards="compact"] .card .meta{ justify-content:center; flex-wrap:wrap; }
+@media (max-width:720px){ body[data-cards="compact"] .card{ width:158px; } body[data-cards="compact"] .joint-card .card{ min-width:144px; } }
+
+/* ---------- photo viewer (lightbox) ---------- */
+#lightbox{ position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(4,8,18,.88); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+#lightbox.open{ display:flex; }
+.lb-fig{ margin:0; max-width:min(94vw,860px); width:100%; display:flex; flex-direction:column; align-items:center; gap:14px; animation:lbIn .24s cubic-bezier(.2,.9,.3,1.1); }
+@keyframes lbIn{ from{ transform:scale(.82); opacity:0; } to{ transform:scale(1); opacity:1; } }
+#lb-img{ max-width:100%; max-height:68vh; width:auto; height:auto; object-fit:contain; border-radius:16px; background:#0b1220; box-shadow:0 30px 70px -20px rgba(0,0,0,.8); }
+.lb-cap{ width:100%; max-width:560px; text-align:center; color:#e2e8f0; }
+.lb-cap .lb-name{ font-size:20px; font-weight:800; letter-spacing:.2px; }
+.lb-cap .lb-meta{ margin-top:4px; font-size:12.5px; color:#94a3b8; font-weight:600; }
+.lb-cap .lb-lines{ margin-top:8px; display:flex; flex-wrap:wrap; gap:6px 16px; justify-content:center; font-size:12.5px; color:#cbd5e1; font-weight:500; line-height:1.45; }
+.lb-cap .lb-lines span{ word-break:break-word; }
+.lb-actions{ display:flex; gap:10px; margin-top:12px; justify-content:center; }
+.lb-btn{ font:inherit; border:none; cursor:pointer; color:#fff; background:rgba(148,163,184,.22); transition:.15s; }
+.lb-btn:hover{ background:rgba(148,163,184,.4); }
+.lb-close{ position:absolute; top:14px; right:14px; width:42px; height:42px; border-radius:50%; font-size:20px; }
+.lb-nav{ position:absolute; top:50%; transform:translateY(-50%); width:48px; height:48px; border-radius:50%; font-size:28px; line-height:1; padding-bottom:4px; }
+.lb-prev{ left:12px; } .lb-next{ right:12px; }
+.lb-edit{ padding:9px 18px; border-radius:999px; font-size:13px; font-weight:700; background:linear-gradient(135deg,var(--accent),var(--male)); }
+.lb-edit:hover{ filter:brightness(1.1); background:linear-gradient(135deg,var(--accent),var(--male)); }
+@media (max-width:600px){ .lb-nav{ top:auto; bottom:18px; transform:none; } .lb-prev{ left:14px; } .lb-next{ right:14px; } #lb-img{ max-height:58vh; } }
+body[data-cards="compact"] .joint-card .card .body{ background:transparent; }
 </style>
 </head>
 <body data-theme="aurora">
@@ -877,6 +926,7 @@ body[data-mode="view"] .card{ cursor:pointer; }
       <span id="zoom-label">100%</span>
       <button id="zoom-in" title="Zoom in">+</button>
     </div>
+    <button class="btn" id="btn-cards" title="Switch between small round photos and large photo cards">▦ Cards</button>
     <button class="btn" id="btn-view" title="Look at someone else's family tree (read-only)">👁 View a tree</button>
     <button class="btn acct-btn" id="btn-account" data-state="local"><span class="dot"></span><span id="account-label">Sign in</span></button>
     <button class="btn" id="btn-export">Export</button>
@@ -902,7 +952,7 @@ body[data-mode="view"] .card{ cursor:pointer; }
   <div id="tree"></div>
 </main>
 
-<div class="hint">Hover a couple for “+ Child” · Hover a single card for “+ Spouse” · Click to edit · Ctrl + scroll to zoom</div>
+<div class="hint">Click a photo to enlarge it · Click the card to edit · Hover a couple for “+ Child” · Ctrl + scroll to zoom</div>
 
 <!-- ================= MODAL ================= -->
 <div class="modal-backdrop" id="modal">
@@ -914,6 +964,7 @@ body[data-mode="view"] .card{ cursor:pointer; }
       <div class="photo-actions">
         <label class="btn small" for="f-photo">Upload photo</label>
         <input type="file" id="f-photo" accept="image/*" hidden>
+        <button type="button" class="btn small" id="btn-adjust-photo">Adjust / crop</button>
         <button type="button" class="btn small ghost" id="btn-remove-photo">Remove photo</button>
         <span class="photo-note">Optional · max 20 MB · saved to your cloud</span>
       </div>
@@ -1075,6 +1126,37 @@ body[data-mode="view"] .card{ cursor:pointer; }
       <button class="btn primary" id="view-go" type="button">View tree</button>
     </div>
   </div>
+</div>
+
+<!-- ================= CROP PHOTO ================= -->
+<div class="modal-backdrop" id="crop-modal" style="z-index:150">
+  <div class="modal narrow" role="dialog" aria-labelledby="crop-title">
+    <h2 id="crop-title">Adjust photo</h2>
+    <div class="crop-stage"><canvas id="crop-canvas" width="300" height="300"></canvas></div>
+    <div class="crop-zoom"><span>−</span><input type="range" id="crop-zoom" min="1" max="4" step="0.01" value="1" aria-label="Zoom"><span>+</span></div>
+    <p class="crop-note">Drag the photo to move it · use the slider to zoom</p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="crop-cancel" type="button">Cancel</button>
+      <div class="spacer"></div>
+      <button class="btn primary" id="crop-ok" type="button">Use photo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PHOTO VIEWER ================= -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <button class="lb-btn lb-close" id="lb-close" type="button" aria-label="Close">✕</button>
+  <button class="lb-btn lb-nav lb-prev" id="lb-prev" type="button" aria-label="Previous photo">‹</button>
+  <figure class="lb-fig">
+    <img id="lb-img" alt="">
+    <figcaption class="lb-cap">
+      <div class="lb-name" id="lb-name"></div>
+      <div class="lb-meta" id="lb-meta"></div>
+      <div class="lb-lines" id="lb-lines"></div>
+      <div class="lb-actions"><button class="lb-btn lb-edit" id="lb-edit" type="button">Edit details</button></div>
+    </figcaption>
+  </figure>
+  <button class="lb-btn lb-nav lb-next" id="lb-next" type="button" aria-label="Next photo">›</button>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1454,7 +1536,11 @@ function renderCard(p) {
     const img = new Image();
     img.src = src;
     img.alt = p.name || '';
+    img.draggable = false;
     photo.appendChild(img);
+    photo.classList.add('zoomable');
+    photo.title = 'Click to enlarge';
+    photo.addEventListener('click', (e) => { e.stopPropagation(); openLightbox(p.id); });
   } else {
     photo.appendChild(el('div', 'ph', initials(p.name)));
   }
@@ -1615,6 +1701,7 @@ function closeModal() {
 }
 
 function updatePhotoPreview() {
+  $('btn-adjust-photo').style.display = draftPhotoSrc ? '' : 'none';
   const box = $('photo-preview');
   box.innerHTML = '';
   if (draftPhotoSrc) {
@@ -2827,6 +2914,155 @@ function exitView() {
 }
 
 /* =========================================================
+   PHOTO CROP — drag to move, slider / pinch-free zoom, square result
+   ========================================================= */
+const crop = { img: null, url: '', revoke: false, zoom: 1, ox: 0, oy: 0, S: 300, drag: null };
+
+function openCrop(src, revoke) {
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    im.onload = () => {
+      Object.assign(crop, { img: im, url: src, revoke: !!revoke, zoom: 1, ox: 0, oy: 0 });
+      $('crop-zoom').value = 1;
+      $('crop-modal').classList.add('open');
+      drawCrop();
+      resolve();
+    };
+    im.onerror = () => { if (revoke) URL.revokeObjectURL(src); reject(new Error('bad image')); };
+    im.src = src;
+  });
+}
+
+function cropGeom(S) {                       // image size on a square of side S, with panning clamped inside
+  const im = crop.img, base = Math.max(S / im.naturalWidth, S / im.naturalHeight), k = base * crop.zoom;
+  const w = im.naturalWidth * k, h = im.naturalHeight * k;
+  return { w, h, mx: Math.max(0, (w - S) / 2), my: Math.max(0, (h - S) / 2) };
+}
+function clampCrop(S) {
+  const g = cropGeom(S);
+  crop.ox = Math.max(-g.mx, Math.min(g.mx, crop.ox));
+  crop.oy = Math.max(-g.my, Math.min(g.my, crop.oy));
+}
+function paintCrop(ctx, S, scale) {          // ox/oy are stored in 300-unit space; scale maps them to S
+  const g = cropGeom(S);
+  const ox = Math.max(-g.mx, Math.min(g.mx, crop.ox * scale)), oy = Math.max(-g.my, Math.min(g.my, crop.oy * scale));
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, S, S);
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(crop.img, S / 2 + ox - g.w / 2, S / 2 + oy - g.h / 2, g.w, g.h);
+}
+function drawCrop() {
+  const c = $('crop-canvas');
+  clampCrop(300);
+  paintCrop(c.getContext('2d'), 300, 1);
+}
+
+function closeCrop() {
+  $('crop-modal').classList.remove('open');
+  if (crop.revoke && crop.url) { try { URL.revokeObjectURL(crop.url); } catch (e) {} }
+  crop.img = null; crop.url = '';
+}
+
+function applyCrop() {
+  if (!crop.img) return;
+  let size = 800, q = 0.88, out = '';
+  for (let i = 0; i < 8; i++) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    paintCrop(c.getContext('2d'), size, size / 300);
+    out = c.toDataURL('image/jpeg', q);
+    if (out.length <= PHOTO_MAX_CHARS) break;
+    if (q > 0.62) q -= 0.08; else size = Math.round(size * 0.82);
+  }
+  draftPhotoSrc = out;
+  draftPhotoId = newPhotoId();
+  closeCrop();
+  updatePhotoPreview();
+}
+
+function initCrop() {
+  const c = $('crop-canvas');
+  c.addEventListener('pointerdown', (e) => {
+    if (!crop.img) return;
+    c.setPointerCapture(e.pointerId);
+    crop.drag = { x: e.clientX, y: e.clientY, ox: crop.ox, oy: crop.oy };
+    c.classList.add('drag');
+  });
+  c.addEventListener('pointermove', (e) => {
+    if (!crop.drag) return;
+    const k = 300 / c.getBoundingClientRect().width;
+    crop.ox = crop.drag.ox + (e.clientX - crop.drag.x) * k;
+    crop.oy = crop.drag.oy + (e.clientY - crop.drag.y) * k;
+    drawCrop();
+  });
+  const end = () => { crop.drag = null; c.classList.remove('drag'); };
+  c.addEventListener('pointerup', end);
+  c.addEventListener('pointercancel', end);
+  c.addEventListener('wheel', (e) => {
+    if (!crop.img) return;
+    e.preventDefault();
+    crop.zoom = Math.max(1, Math.min(4, crop.zoom + (e.deltaY > 0 ? -0.08 : 0.08)));
+    $('crop-zoom').value = crop.zoom; drawCrop();
+  }, { passive: false });
+  $('crop-zoom').addEventListener('input', (e) => { crop.zoom = Number(e.target.value) || 1; drawCrop(); });
+  $('crop-ok').addEventListener('click', applyCrop);
+  $('crop-cancel').addEventListener('click', closeCrop);
+}
+
+/* =========================================================
+   CARD STYLE + PHOTO VIEWER (Facebook-style: small first, big on click)
+   ========================================================= */
+function setCards(style) {
+  const v = style === 'large' ? 'large' : 'compact';
+  document.body.dataset.cards = v;
+  $('btn-cards').textContent = v === 'compact' ? '▦ Large cards' : '◉ Small photos';
+  try { localStorage.setItem('familyTree.cards', v); } catch (e) {}
+}
+
+const lb = { list: [], i: 0, id: '' };
+function photoPeople() {
+  const out = [];
+  eachPerson(data, p => { if (p.photoId && photoCache.get(p.photoId)) out.push(p); });
+  return out;
+}
+function openLightbox(id) {
+  lb.list = photoPeople();
+  lb.i = Math.max(0, lb.list.findIndex(p => p.id === id));
+  if (!lb.list.length) return;
+  showLightbox();
+  $('lightbox').classList.add('open');
+}
+function stepLightbox(d) {
+  if (lb.list.length < 2) return;
+  lb.i = (lb.i + d + lb.list.length) % lb.list.length;
+  showLightbox();
+}
+function showLightbox() {
+  const p = lb.list[lb.i];
+  lb.id = p.id;
+  const img = $('lb-img');
+  img.src = photoCache.get(p.photoId);
+  img.alt = p.name || '';
+  $('lb-name').textContent = p.name || 'Unnamed';
+  const parts = [p.gender === 'female' ? 'Female' : p.gender === 'male' ? 'Male' : 'Other'];
+  if (p.dob) parts.push('born ' + formatDate(p.dob));
+  if (lb.list.length > 1) parts.push((lb.i + 1) + ' of ' + lb.list.length);
+  $('lb-meta').textContent = parts.join(' · ');
+  const lines = $('lb-lines');
+  lines.textContent = '';
+  [['💼 ', p.occupation], ['📞 ', p.phone], ['✉️ ', p.email], ['📍 ', p.address]].forEach(([ic, v]) => {
+    if (v) lines.appendChild(el('span', null, ic + v));
+  });
+  $('lb-edit').textContent = mode === 'edit' ? 'Edit details' : 'View details';
+  const many = lb.list.length > 1;
+  $('lb-prev').style.display = many ? '' : 'none';
+  $('lb-next').style.display = many ? '' : 'none';
+}
+function closeLightbox() {
+  $('lightbox').classList.remove('open');
+  $('lb-img').removeAttribute('src');
+}
+
+/* =========================================================
    INIT
    ========================================================= */
 async function init() {
@@ -2872,6 +3108,22 @@ async function init() {
     e.target.value = '';
   });
   $('btn-account').addEventListener('click', openAccount);
+  let cards = 'compact';
+  try { cards = localStorage.getItem('familyTree.cards') || 'compact'; } catch (e) {}
+  setCards(cards);
+  $('btn-cards').addEventListener('click', () => setCards(document.body.dataset.cards === 'compact' ? 'large' : 'compact'));
+  $('lb-close').addEventListener('click', closeLightbox);
+  $('lb-prev').addEventListener('click', () => stepLightbox(-1));
+  $('lb-next').addEventListener('click', () => stepLightbox(1));
+  $('lb-edit').addEventListener('click', () => { const id = lb.id; closeLightbox(); if (id) openModal(id); });
+  $('lightbox').addEventListener('click', (e) => { if (e.target === $('lightbox')) closeLightbox(); });
+  let sx = null;                                                   // swipe left/right on touch screens
+  $('lightbox').addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true });
+  $('lightbox').addEventListener('touchend', (e) => {
+    if (sx == null) return;
+    const dx = e.changedTouches[0].clientX - sx; sx = null;
+    if (Math.abs(dx) > 60) stepLightbox(dx < 0 ? 1 : -1);
+  }, { passive: true });
   $('btn-view').addEventListener('click', openViewDialog);
   $('land-signin').addEventListener('click', openAuth);
   $('land-view').addEventListener('click', openViewDialog);
@@ -2900,13 +3152,12 @@ async function init() {
       alert('That photo is ' + (file.size / (1024 * 1024)).toFixed(1) + ' MB.\nThe maximum allowed size is 20 MB.');
       e.target.value = ''; return;
     }
-    try {
-      draftPhotoSrc = await fileToDataURL(file);
-      draftPhotoId = newPhotoId();
-      updatePhotoPreview();
-    } catch (err) { alert('Could not read that image.'); }
+    try { await openCrop(URL.createObjectURL(file), true); }
+    catch (err) { alert('Could not read that image.'); }
     e.target.value = '';
   });
+  $('btn-adjust-photo').addEventListener('click', () => { if (draftPhotoSrc) openCrop(draftPhotoSrc, false).catch(() => {}); else $('f-photo').click(); });
+  initCrop();
   $('btn-remove-photo').addEventListener('click', () => { draftPhotoId = ''; draftPhotoSrc = ''; updatePhotoPreview(); });
 
   /* auth + account modals */
@@ -2930,12 +3181,18 @@ async function init() {
 
   /* keyboard */
   document.addEventListener('keydown', (e) => {
+    if ($('lightbox').classList.contains('open')) {
+      if (e.key === 'Escape') { closeLightbox(); return; }
+      if (e.key === 'ArrowLeft') { stepLightbox(-1); return; }
+      if (e.key === 'ArrowRight') { stepLightbox(1); return; }
+    }
     if (e.key === 'Escape') {
-      for (const id of ['exp-modal', 'acct-modal', 'auth-modal', 'view-modal']) if ($(id).classList.contains('open')) { closeOverlay(id); return; }
+      for (const id of ['crop-modal', 'exp-modal', 'acct-modal', 'auth-modal', 'view-modal']) if ($(id).classList.contains('open')) { if (id === 'crop-modal') closeCrop(); else closeOverlay(id); return; }
       if ($('modal').classList.contains('open')) closeModal();
       return;
     }
     if (e.key === 'Enter' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'TEXTAREA') {
+      if ($('crop-modal').classList.contains('open')) { e.preventDefault(); applyCrop(); return; }
       if ($('auth-modal').classList.contains('open')) { e.preventDefault(); submitAuth(); }
       else if ($('view-modal').classList.contains('open')) { e.preventDefault(); openView($('view-email').value); }
       else if ($('modal').classList.contains('open') && mode !== 'edit') closeModal();
