@@ -1,6 +1,6 @@
 /* Family Tree service worker: network-first for the app shell (always fresh), cache fallback when offline.
    Firebase / Google requests are never touched. */
-const CACHE = 'family-tree-202610300757';
+const CACHE = 'family-tree-202610310241';
 self.addEventListener('install', (e) => { self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
